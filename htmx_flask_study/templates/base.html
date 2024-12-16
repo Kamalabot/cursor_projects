@@ -9,13 +9,19 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">Task Manager</a>
+            <div>
+                <a href="/" class="btn btn-outline-light">Simple View</a>
+                <a href="/detailed" class="btn btn-outline-light">Detailed View</a>
+            </div>
         </div>
     </nav>
 
     <div class="container mt-4">
+        <!-- Content that is created in the index.html file -->
         {% block content %}{% endblock %}
     </div>
 

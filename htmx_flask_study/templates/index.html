@@ -8,6 +8,7 @@
                 <h5 class="card-title">Add New Task</h5>
                 <form hx-post="/tasks" hx-target="#task-list" class="d-flex">
                     <input type="text" name="title" class="form-control me-2" placeholder="Enter task..." required>
+                    <input type="date" name="target_date" class="form-control me-2" placeholder="Enter target date..." required>
                     <button type="submit" class="btn btn-primary">Add</button>
                 </form>
             </div>
