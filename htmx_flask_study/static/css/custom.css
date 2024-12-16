@@ -83,3 +83,27 @@
     border-radius: 50%;
     margin-right: 8px;
 }
+
+/* Flash messages styling */
+.flash-messages {
+    position: fixed;
+    top: 60px;  /* Adjust based on your navbar height */
+    right: 20px;
+    z-index: 1050;  /* Higher than sidebar */
+    max-width: 400px;
+    min-width: 300px;
+}
+
+.alert {
+    margin: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: fadeInOut 5s ease-in-out;
+    transition: opacity 0.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
