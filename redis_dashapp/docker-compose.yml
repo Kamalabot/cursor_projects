@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: task-manager-web
+    ports:
+      - "5000:5000"
+    command: flask run --host=0.0.0.0 --port=5000
+    environment:
+      - FLASK_APP=app:app
+      - FLASK_ENV=development
+      - DATABASE_URL=sqlite:///tasks.db
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - SECRET_KEY=${SECRET_KEY}
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - sqlite_data:/app/instance
+    depends_on:
+      - redis
+
+  dashboard:
+    build: .
+    container_name: task-manager-dashboard
+    ports:
+      - "5001:5001"
+    command: flask run --host=0.0.0.0 --port=5001
+    environment:
+      - FLASK_APP=redis_dashboard:dashboard
+      - FLASK_ENV=development
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+
+  redis:
+    image: redis:alpine
+    container_name: task-manager-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  sqlite_data:
+  redis_data:
