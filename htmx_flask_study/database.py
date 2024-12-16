@@ -11,3 +11,10 @@ class Task(db.Model):
     target_date = db.Column(db.DateTime)
     priority = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='pending')
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    category = db.relationship('Category', backref='tasks')
+
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    color = db.Column(db.String(7), default='#000000')  # Hex color code
