@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+</head>
+<body>
+    <h1>Analysis Results</h1>
+    <h2>Row Count: {{ results.row_count }}</h2>
+    <h2>Column Count: {{ results.column_count }}</h2>
+    <h3>Columns:</h3>
+    <ul>
+        {% for column in results.columns %}
+            <li>{{ column }}</li>
+        {% endfor %}
+    </ul>
+    <h3>Missing Values:</h3>
+    <ul>
+        {% for key, value in results.missing_values.items() %}
+            <li>{{ key }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+    <h3>Numeric Columns Stats:</h3>
+    <pre>{{ results.numeric_columns_stats | tojson(indent=2) }}</pre>
+    <a href="/">Upload another file</a>
+</body>
+</html> 
