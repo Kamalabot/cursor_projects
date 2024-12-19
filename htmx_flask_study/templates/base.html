@@ -82,6 +82,23 @@
                 });
             }, 5000); // 5000 milliseconds = 5 seconds
         });
+
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = this.querySelector('i');
+
+            // Toggle the 'collapsed' class on the sidebar
+            sidebar.classList.toggle('collapsed');
+
+            // Change the icon based on the sidebar state
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('bi-chevron-left');
+                icon.classList.add('bi-chevron-right'); // Change to right chevron when collapsed
+            } else {
+                icon.classList.remove('bi-chevron-right');
+                icon.classList.add('bi-chevron-left'); // Change to left chevron when expanded
+            }
+        });
     </script>
 </body>
 </html>
