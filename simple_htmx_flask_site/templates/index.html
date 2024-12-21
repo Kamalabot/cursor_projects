@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">Task Manager</h1>
+    
+    <!-- Add Task Form -->
+    <form hx-post="/add-task" 
+          hx-target="#task-list" 
+          class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <input type="text" 
+                   name="title" 
+                   placeholder="Task title" 
+                   class="col-span-2 p-2 border rounded"
+                   required>
+            <select name="priority" class="p-2 border rounded">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+            <input type="date" 
+                   name="due_date" 
+                   class="p-2 border rounded"
+                   required>
+        </div>
+        <button type="submit" 
+                class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Add Task
+        </button>
+    </form>
+
+    <!-- Task List -->
+    <div id="task-list">
+        {% include 'task_list.html' %}
+    </div>
+</div>
+{% endblock %}

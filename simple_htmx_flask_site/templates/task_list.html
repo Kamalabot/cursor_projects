@@ -1,0 +1,41 @@
+<div class="bg-white rounded-lg shadow-md">
+    {% for task in tasks %}
+    <div class="p-4 border-b {% if task.completed %}bg-gray-100{% endif %}">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <input type="checkbox" 
+                       {% if task.completed %}checked{% endif %}
+                       hx-post="/update-task"
+                       hx-target="#task-list"
+                       hx-vals='{"id": "{{ task.id }}", "field": "completed", "value": "{{ 'false' if task.completed else 'true' }}"}'>
+                <span class="{% if task.completed %}line-through text-gray-500{% endif %}">
+                    {{ task.title }}
+                </span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <select hx-post="/update-task"
+                        hx-target="#task-list"
+                        hx-trigger="change"
+                        name="priority"
+                        class="p-1 border rounded text-sm">
+                    <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
+                </select>
+                <input type="date"
+                       value="{{ task.due_date }}"
+                       hx-post="/update-task"
+                       hx-target="#task-list"
+                       hx-trigger="change"
+                       class="p-1 border rounded text-sm">
+                <input type="hidden" name="id" value="{{ task.id }}">
+                <input type="hidden" name="field" value="due_date">
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="p-4 text-center text-gray-500">
+        No tasks yet. Add one above!
+    </div>
+    {% endfor %}
+</div>
