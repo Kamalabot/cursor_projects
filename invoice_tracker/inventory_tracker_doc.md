@@ -1,26 +1,98 @@
-
-
-Here's the complete markdown document for the inventory tracking application:
-
-```markdown:inventory_tracker.md
 # Electronics Inventory Tracking System
 
-A Flask-based inventory management system for electronic components with Bootstrap styling and SQLite database.
+A Flask-based inventory management system with user authentication, modern UI, and HTMX integration.
 
 ## Project Structure
 ```
 electronics_inventory/
     ├── static/
     │   └── css/
-    │       └── style.css
+    │       └── styles.css
     ├── templates/
     │   ├── base.html
-    │   ├── index.html
+    │   ├── landing.html
+    │   ├── login.html
+    │   ├── register.html
+    │   ├── dashboard.html
     │   ├── add_item.html
-    │   └── upload_csv.html
+    │   ├── upload_csv.html
+    │   └── partials/
+    │       └── inventory_row.html
     ├── app.py
     ├── database.py
     └── inventory_sample.csv
+```
+
+## Features
+- User authentication (register, login, logout)
+- Secure inventory management per user
+- Modern responsive dashboard with sidebar
+- Real-time updates using HTMX
+- Inline quantity editing with HTMX
+- Item deletion with confirmation
+- View all inventory items
+- Add individual items through a web form
+- Bulk import items via CSV file
+- Bootstrap-styled responsive interface
+- SQLite database for data persistence
+- Flash messages for user feedback
+
+## HTMX Integration and Solutions
+
+### Avoiding Recursive Loading
+Initially, the dashboard had a recursive loading issue due to the following HTMX configuration:
+
+```html
+<!-- Problematic code -->
+<div class="table-responsive" hx-get="{{ url_for('dashboard') }}" hx-trigger="load">
+    <!-- Table content -->
+</div>
+```
+
+This caused infinite reloading because:
+1. The page loads
+2. HTMX triggers the load event
+3. The dashboard route returns the entire page
+4. The new page triggers another load event
+5. And so on...
+
+### Solution
+The solution involves:
+
+1. Remove automatic loading of the entire table:
+```html
+<!-- Correct implementation -->
+<div class="table-responsive" id="inventory-table">
+    <!-- Table content -->
+</div>
+```
+
+2. Implement targeted updates using partial templates:
+```html
+<!-- Partial template for row updates -->
+templates/partials/inventory_row.html
+```
+
+3. Use specific HTMX triggers for individual actions:
+```html
+<!-- Example: Inline quantity editing -->
+<input type="number" 
+       class="form-control quantity-input d-none" 
+       value="{{ item['quantity'] }}"
+       hx-put="{{ url_for('update_quantity', item_id=item['id']) }}"
+       hx-trigger="change"
+       hx-target="closest tr">
+```
+
+4. Handle row-level updates:
+```html
+<!-- Example: Delete button with confirmation -->
+<button class="btn btn-sm btn-outline-danger"
+        hx-delete="{{ url_for('delete_item', item_id=item['id']) }}"
+        hx-confirm="Are you sure you want to delete this item?"
+        hx-target="closest tr">
+    <i class="bi bi-trash"></i>
+</button>
 ```
 
 ## Installation and Setup
@@ -33,7 +105,7 @@ cd electronics_inventory
 
 2. Install required packages:
 ```bash
-pip install flask
+pip install flask werkzeug
 ```
 
 3. Create the necessary files and directories as shown in the project structure.
@@ -57,7 +129,20 @@ def init_db():
             category TEXT NOT NULL,
             sector TEXT NOT NULL,
             application TEXT NOT NULL,
-            date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            user_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    # Create users table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
@@ -69,14 +154,25 @@ def init_db():
 
 Create `app.py`:
 ```python
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 from datetime import datetime
 import csv
 import io
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Required for flashing messages
+app.secret_key = 'your_secret_key_here'  # Required for sessions and flash messages
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in first.')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def get_db_connection():
     conn = sqlite3.connect('inventory.db')
@@ -84,11 +180,65 @@ def get_db_connection():
     return conn
 
 @app.route('/')
-def index():
+def landing():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('landing.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
     conn = get_db_connection()
-    items = conn.execute('SELECT * FROM inventory ORDER BY date_added DESC').fetchall()
+    items = conn.execute('SELECT * FROM inventory WHERE user_id = ? ORDER BY date_added DESC', 
+                        (session['user_id'],)).fetchall()
     conn.close()
-    return render_template('index.html', items=items)
+    return render_template('dashboard.html', items=items)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            flash('Welcome back!')
+            return redirect(url_for('dashboard'))
+        
+        flash('Invalid username or password')
+        conn.close()
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        
+        conn = get_db_connection()
+        if conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+            
+        hashed_password = generate_password_hash(password)
+        conn.execute('INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
+                    (username, hashed_password, email))
+        conn.commit()
+        conn.close()
+        flash('Registration successful! Please log in.')
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.')
+    return redirect(url_for('landing'))
 
 @app.route('/add', methods=('GET', 'POST'))
 def add_item():
@@ -103,12 +253,12 @@ def add_item():
             flash('Name and quantity are required!')
         else:
             conn = get_db_connection()
-            conn.execute('INSERT INTO inventory (name, quantity, category, sector, application) VALUES (?, ?, ?, ?, ?)',
-                        (name, quantity, category, sector, application))
+            conn.execute('INSERT INTO inventory (name, quantity, category, sector, application, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+                        (name, quantity, category, sector, application, session['user_id']))
             conn.commit()
             conn.close()
             flash('Item successfully added!')
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
             
     return render_template('add_item.html')
 
@@ -139,10 +289,10 @@ def upload_csv():
                     name, quantity, category, sector, application, *_ = row
                     
                     conn.execute('''
-                        INSERT INTO inventory (name, quantity, category, sector, application)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO inventory (name, quantity, category, sector, application, user_id)
+                        VALUES (?, ?, ?, ?, ?, ?)
                     ''', (name.strip(), int(quantity), category.strip(), 
-                         sector.strip(), application.strip()))
+                         sector.strip(), application.strip(), session['user_id']))
                     success_count += 1
                 except Exception as e:
                     error_count += 1
@@ -152,7 +302,7 @@ def upload_csv():
             conn.close()
             
             flash(f'Successfully imported {success_count} items. {error_count} items failed.')
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             flash('Please upload a CSV file')
             return redirect(url_for('upload_csv'))
@@ -174,138 +324,179 @@ if __name__ == '__main__':
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electronics Inventory</title>
+    <title>Inventory Tracker</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Electronics Inventory</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-                <a class="nav-link" href="{{ url_for('add_item') }}">Add Item</a>
-                <a class="nav-link" href="{{ url_for('upload_csv') }}">Import CSV</a>
+    {% if session.get('user_id') %}
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="{{ url_for('dashboard') }}">Inventory Tracker</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-nav">
+            <div class="nav-item text-nowrap">
+                <span class="nav-link px-3 text-white">Welcome, {{ session.get('username') }}</span>
             </div>
         </div>
-    </nav>
+    </header>
+    {% endif %}
 
-    <div class="container mt-4">
+    <div class="container-fluid">
         {% for message in get_flashed_messages() %}
-            <div class="alert alert-info">{{ message }}</div>
+            <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         {% endfor %}
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 ```
 
-### Index Template (`templates/index.html`):
+### Landing Page (`templates/landing.html`):
 ```html
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Inventory List</h1>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Category</th>
-                <th>Sector</th>
-                <th>Application</th>
-                <th>Date Added</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item['name'] }}</td>
-                <td>{{ item['quantity'] }}</td>
-                <td>{{ item['category'] }}</td>
-                <td>{{ item['sector'] }}</td>
-                <td>{{ item['application'] }}</td>
-                <td>{{ item['date_added'] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% endblock %}
-```
-
-### Add Item Template (`templates/add_item.html`):
-```html
-{% extends 'base.html' %}
-
-{% block content %}
-    <h1>Add New Item</h1>
-    <form method="post">
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <div class="col-md-6 bg-primary text-white p-5 min-vh-100 d-flex flex-column justify-content-center">
+            <h1 class="display-4 fw-bold">Inventory Tracker</h1>
+            <p class="lead">Manage your inventory efficiently with our modern tracking system.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('login') }}" class="btn btn-light btn-lg me-3">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">Register</a>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="quantity" class="form-label">Quantity</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" required>
-        </div>
-        <div class="mb-3">
-            <label for="category" class="form-label">Category</label>
-            <input type="text" class="form-control" id="category" name="category" required>
-        </div>
-        <div class="mb-3">
-            <label for="sector" class="form-label">Sector</label>
-            <input type="text" class="form-control" id="sector" name="sector" required>
-        </div>
-        <div class="mb-3">
-            <label for="application" class="form-label">Application</label>
-            <textarea class="form-control" id="application" name="application" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Item</button>
-    </form>
-{% endblock %}
-```
-
-### CSV Upload Template (`templates/upload_csv.html`):
-```html
-{% extends 'base.html' %}
-
-{% block content %}
-    <h1>Upload Inventory CSV</h1>
-    <div class="card mt-4">
-        <div class="card-body">
-            <h5 class="card-title">CSV Format Requirements</h5>
-            <p class="card-text">Please ensure your CSV file follows this format:</p>
-            <code>name, quantity, category, sector, application</code>
-            <p class="card-text mt-2">Example:</p>
-            <code>electronic1, 15, home appliances, Kitchen, Dish Washing</code>
+        <div class="col-md-6 bg-light p-5 min-vh-100 d-flex flex-column justify-content-center">
+            <h2 class="mb-4">Features</h2>
+            <div class="feature-list">
+                <div class="mb-4">
+                    <h4>📊 Real-time Tracking</h4>
+                    <p>Monitor your inventory levels in real-time with our dynamic dashboard.</p>
+                </div>
+                <div class="mb-4">
+                    <h4>📈 Bulk Import</h4>
+                    <p>Easily import inventory data using CSV files for quick setup.</p>
+                </div>
+                <div class="mb-4">
+                    <h4>🔒 Secure Access</h4>
+                    <p>Keep your inventory data safe with user authentication and authorization.</p>
+                </div>
+            </div>
         </div>
     </div>
-
-    <form method="post" enctype="multipart/form-data" class="mt-4">
-        <div class="mb-3">
-            <label for="file" class="form-label">Select CSV File</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Upload and Import</button>
-    </form>
+</div>
 {% endblock %}
 ```
 
-## Sample CSV Data
+### Dashboard Template (`templates/dashboard.html`):
+```html
+{% extends 'base.html' %}
 
-Create `inventory_sample.csv`:
-```csv
-LED TV Samsung,25,home appliances,Living Room,Entertainment Display,2024-12-21 16:16:53
-Microwave Oven,15,home appliances,Kitchen,Food Heating,2024-12-21 16:17:00
-Smart Thermostat,30,home automation,HVAC,Temperature Control,2024-12-21 16:17:15
-Security Camera,40,security,Outdoor,Surveillance,2024-12-21 16:17:30
-Robot Vacuum,12,home appliances,Cleaning,Floor Cleaning,2024-12-21 16:17:45
-Smart Door Lock,20,security,Entry,Access Control,2024-12-21 16:18:00
-Air Purifier,18,home appliances,Bedroom,Air Cleaning,2024-12-21 16:18:15
-Smart Speaker,50,home automation,Living Room,Voice Control,2024-12-21 16:18:30
-Dishwasher,10,home appliances,Kitchen,Dish Cleaning,2024-12-21 16:18:45
-Smart Light Bulbs,100,home automation,Lighting,Illumination Control,2024-12-21 16:19:00
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-house-door"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('add_item') }}">
+                            <i class="bi bi-plus-circle"></i> Add Item
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload_csv') }}">
+                            <i class="bi bi-upload"></i> Import CSV
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h1>Inventory List</h1>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Category</th>
+                        <th>Sector</th>
+                        <th>Application</th>
+                        <th>Date Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item['name'] }}</td>
+                        <td>{{ item['quantity'] }}</td>
+                        <td>{{ item['category'] }}</td>
+                        <td>{{ item['sector'] }}</td>
+                        <td>{{ item['application'] }}</td>
+                        <td>{{ item['date_added'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </main>
+    </div>
+</div>
+{% endblock %}
+```
+
+## Custom Styles
+
+Create `static/css/styles.css`:
+```css
+/* Sidebar styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+/* ... [Additional styles for sidebar, main content, responsive design] ... */
+
+/* Landing page styles */
+.feature-list h4 {
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+}
+
+.feature-list p {
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
 ```
 
 ## Running the Application
@@ -318,23 +509,32 @@ python app.py
 ```
 4. Open a web browser and navigate to `http://localhost:5000`
 
-## Features
-- View all inventory items
-- Add individual items through a web form
-- Bulk import items via CSV file
-- Bootstrap-styled responsive interface
-- SQLite database for data persistence
-- Flash messages for user feedback
+## Security Considerations
+- Passwords are hashed using Werkzeug's security functions
+- User sessions are managed securely
+- Protected routes require authentication
+- Each user can only access their own inventory items
+- HTMX requests are validated for user ownership
+
+## Best Practices for HTMX Integration
+1. Use partial templates for updates
+2. Target specific elements instead of full page reloads
+3. Implement proper error handling
+4. Validate user permissions for each request
+5. Use appropriate HTTP methods (GET, POST, PUT, DELETE)
+6. Add confirmation dialogs for destructive actions
+7. Provide visual feedback for user actions
 
 ## Future Enhancements
-- Edit functionality
-- Delete functionality
-- Search and filter capabilities
-- User authentication
-- Stock alerts
+- Password reset functionality
+- Email verification
+- Two-factor authentication
+- Advanced search and filtering
 - Export functionality
-- Data validation
-- Duplicate entry handling
+- Stock alerts
+- Activity logging
+- Batch operations
+- Role-based access control
 ```
 
 This markdown document provides a complete guide to setting up and running the electronics inventory tracking system. You can save this as `inventory_tracker.md` and use it as a reference for implementing the system.
