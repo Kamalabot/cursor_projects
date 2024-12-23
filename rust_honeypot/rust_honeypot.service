@@ -1,0 +1,15 @@
+[Unit]
+Description=Rust Honeypot Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/rust_honeypot
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/honeypot.log
+StandardError=append:/var/log/honeypot.error.log
+
+[Install]
+WantedBy=multi-user.target 
