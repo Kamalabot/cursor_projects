@@ -538,3 +538,163 @@ python app.py
 ```
 
 This markdown document provides a complete guide to setting up and running the electronics inventory tracking system. You can save this as `inventory_tracker.md` and use it as a reference for implementing the system.
+
+Certainly! Below is the updated section for the `inventory_tracker_doc.md` that includes a discussion of the test cases and the GitHub Actions setup for CI/CD.
+
+### Updated `inventory_tracker_doc.md`
+
+```markdown
+# Electronics Inventory Tracking System
+
+A Flask-based inventory management system with user authentication, modern UI, and HTMX integration.
+
+## Project Structure
+```
+electronics_inventory/
+    ├── static/
+    │   └── css/
+    │       └── styles.css
+    ├── templates/
+    │   ├── base.html
+    │   ├── landing.html
+    │   ├── login.html
+    │   ├── register.html
+    │   ├── dashboard.html
+    │   ├── add_item.html
+    │   ├── upload_csv.html
+    │   └── partials/
+    │       └── inventory_row.html
+    ├── app.py
+    ├── database.py
+    ├── tests/
+    │   └── test_app.py
+    └── inventory_sample.csv
+```
+
+## Features
+- User authentication (register, login, logout)
+- Secure inventory management per user
+- Modern responsive dashboard with sidebar
+- Real-time updates using HTMX
+- Inline quantity editing with HTMX
+- Item deletion with confirmation
+- View all inventory items
+- Add individual items through a web form
+- Bulk import items via CSV file
+- Bootstrap-styled responsive interface
+- SQLite database for data persistence
+- Flash messages for user feedback
+
+## Testing
+
+### Test Cases
+
+The application includes a suite of unit tests to ensure the functionality of the Flask server. The tests are located in the `tests/test_app.py` file and cover the following functionalities:
+
+1. **Landing Page**: Tests that the landing page loads successfully and contains the expected elements (e.g., "Inventory Tracker", "Login", "Register").
+
+2. **Login Page**: Tests that the login page loads successfully and contains the necessary fields (e.g., "Username", "Password").
+
+3. **Registration**: Tests the registration process, ensuring that a new user can register successfully and that the appropriate success message is displayed.
+
+4. **Login Functionality**: Tests the login process, ensuring that a registered user can log in and is redirected to the dashboard with a welcome message.
+
+5. **Add Item**: Tests the functionality of adding an item to the inventory, ensuring that the item is added successfully and the appropriate success message is displayed.
+
+### Running Tests Locally
+
+To run the tests locally, follow these steps:
+
+1. **Navigate to Your Project Directory**:
+   ```bash
+   cd path/to/your/electronics_inventory
+   ```
+
+2. **Set Up a Virtual Environment (Optional)**:
+   ```bash
+   python -m venv venv
+   ```
+
+3. **Activate the Virtual Environment**:
+   - On **Windows**:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - On **macOS/Linux**:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Run the Tests**:
+   ```bash
+   python -m unittest discover -s tests
+   ```
+
+## CI/CD Pipeline Configuration with GitHub Actions
+
+To set up a CI/CD pipeline using GitHub Actions, create a new file in your repository at `.github/workflows/python-app.yml` with the following content:
+
+```yaml
+name: Python application
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Specify the Python version you want to use
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Ensure you have a requirements.txt file
+
+    - name: Run tests
+      run: |
+        python -m unittest discover -s tests  # Adjust the path if necessary
+```
+
+### Explanation of the GitHub Actions Workflow
+
+- **Triggers**: The workflow is triggered on every push and pull request to the repository.
+- **Jobs**: The `build` job runs on the latest version of Ubuntu.
+- **Steps**:
+  - **Checkout Code**: Uses the `actions/checkout` action to pull the code from the repository.
+  - **Set Up Python**: Uses the `actions/setup-python` action to set up the specified version of Python.
+  - **Install Dependencies**: Installs the required packages listed in `requirements.txt`.
+  - **Run Tests**: Executes the unit tests located in the `tests` directory.
+
+## Future Enhancements
+- Password reset functionality
+- Email verification
+- Two-factor authentication
+- Advanced search and filtering
+- Export functionality
+- Stock alerts
+- Activity logging
+- Batch operations
+- Role-based access control
+```
+
+### Summary of Updates
+
+- Added a **Testing** section that describes the test cases and their purpose.
+- Included instructions for running tests locally.
+- Added a **CI/CD Pipeline Configuration with GitHub Actions** section that details the setup for automated testing on GitHub.
+- Provided an explanation of the GitHub Actions workflow.
+
+This updated documentation should provide a comprehensive overview of testing and CI/CD setup for the Electronics Inventory Tracking System.
