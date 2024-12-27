@@ -1,8 +1,7 @@
+Here's the documentation in markdown format for
+the Redis Cache Tool implementation:
 
-
-Here's the documentation in markdown format for the Redis Cache Tool implementation:
-
-```markdown:redis_cache_tool.md
+````markdown:redis_cache_tool.md
 # Redis Cache Tool for CrewAI
 
 A CrewAI-compatible tool for managing Redis cache operations using natural language commands.
@@ -27,11 +26,12 @@ class RedisCacheTool(BaseTool):
     - To store with expiry: "store [key] with value [value] expire in [seconds] seconds"
     """
     # ... [rest of the implementation]
-```
+````
 
 ### 2. Redis Crew Setup (`redis_kv_crew.py`)
 
-Implements a CrewAI crew with a Redis-specialized agent.
+Implements a CrewAI crew with a Redis-specialized
+agent.
 
 ```python
 from crewai import Agent, Task, Crew
@@ -85,6 +85,7 @@ result = redis_crew.kickoff()
 ## Setup Requirements
 
 1. Dependencies:
+
    ```bash
    pip install crewai redis
    ```
@@ -101,6 +102,7 @@ result = redis_crew.kickoff()
 The tool accepts the following command formats:
 
 1. Basic storage:
+
    ```
    store [key] with value [value]
    ```
@@ -113,6 +115,7 @@ The tool accepts the following command formats:
 ## Error Handling
 
 The tool provides clear error messages for:
+
 - Invalid command formats
 - Redis connection issues
 - Invalid expiry time formats
@@ -121,6 +124,7 @@ The tool provides clear error messages for:
 ## Future Enhancements
 
 Potential additions:
+
 - Get value operations
 - Delete key operations
 - List keys functionality
@@ -129,39 +133,49 @@ Potential additions:
 
 ## Contributing
 
-Feel free to extend this tool with additional Redis operations by:
-1. Adding new command formats to the description
-2. Implementing corresponding handlers in the `_run` method
-3. Updating documentation with new features
-```
+Feel free to extend this tool with additional
+Redis operations by:
 
-This markdown documentation provides a comprehensive overview of the Redis Cache Tool implementation, including setup instructions, usage examples, and potential future enhancements. 
+1. Adding new command formats to the description
+2. Implementing corresponding handlers in the
+   `_run` method
+3. Updating documentation with new features
+
+````
+
+This markdown documentation provides a comprehensive overview of the Redis Cache Tool implementation, including setup instructions, usage examples, and potential future enhancements.
 
 
 
 Here's the additional documentation about model_config for the Redis Cache Tool, which you can add to your `redis_cache_tool.md`:
 
 ```markdown:redis_cache_tool.md
+
 ## Pydantic Model Configuration
 
 ### Understanding model_config
 
-The `model_config` in our RedisCacheTool uses Pydantic's configuration system to customize model behavior. 
+The `model_config` in our RedisCacheTool uses Pydantic's configuration system to customize model behavior.
 
 ```python
 model_config = ConfigDict(arbitrary_types_allowed=True)
-```
+````
 
 ### Key Configuration Options
 
 1. **arbitrary_types_allowed**
    - Default: `False`
-   - When set to `True`, allows the model to accept fields with types that Pydantic doesn't natively support
-   - Essential for our Redis client integration as `redis.Redis` is not a Pydantic-compatible type
+   - When set to `True`, allows the model to
+     accept fields with types that Pydantic
+     doesn't natively support
+   - Essential for our Redis client integration as
+     `redis.Redis` is not a Pydantic-compatible
+     type
 
 ### Other Useful model_config Options
 
-You can extend the model configuration with these additional settings if needed:
+You can extend the model configuration with these
+additional settings if needed:
 
 ```python
 model_config = ConfigDict(
@@ -175,18 +189,20 @@ model_config = ConfigDict(
 
 ### Common Configuration Options:
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `arbitrary_types_allowed` | Allow arbitrary user types | `False` |
-| `extra` | How to handle extra attributes (`allow`, `forbid`, `ignore`) | `'ignore'` |
-| `frozen` | Make the model immutable | `False` |
-| `validate_assignment` | Validate attributes when set after model creation | `False` |
-| `str_strip_whitespace` | Strip whitespace from strings | `False` |
+| Option                    | Description                                                  | Default    |
+| ------------------------- | ------------------------------------------------------------ | ---------- |
+| `arbitrary_types_allowed` | Allow arbitrary user types                                   | `False`    |
+| `extra`                   | How to handle extra attributes (`allow`, `forbid`, `ignore`) | `'ignore'` |
+| `frozen`                  | Make the model immutable                                     | `False`    |
+| `validate_assignment`     | Validate attributes when set after model creation            | `False`    |
+| `str_strip_whitespace`    | Strip whitespace from strings                                | `False`    |
 
 ### When to Use model_config
 
 Use model_config when you need to:
-- Work with external libraries that have custom types
+
+- Work with external libraries that have custom
+  types
 - Enforce strict data validation rules
 - Control model behavior regarding extra fields
 - Implement immutable models
@@ -194,7 +210,9 @@ Use model_config when you need to:
 
 ### Impact on CrewAI Tools
 
-For CrewAI tools, proper model configuration is crucial when:
+For CrewAI tools, proper model configuration is
+crucial when:
+
 - Integrating external services (like Redis)
 - Handling custom data types
 - Ensuring tool stability and predictability
@@ -202,10 +220,14 @@ For CrewAI tools, proper model configuration is crucial when:
 
 ### Best Practices
 
-1. Only enable `arbitrary_types_allowed` when necessary
+1. Only enable `arbitrary_types_allowed` when
+   necessary
 2. Document any custom type handling
 3. Consider validation implications
-4. Test model behavior thoroughly after configuration changes
+4. Test model behavior thoroughly after
+   configuration changes
+
 ```
 
 This documentation section explains the importance and usage of model_config in the context of our Redis Cache Tool and Pydantic models in general. It provides both basic and advanced configuration options that might be useful for future tool development or modifications.
+```

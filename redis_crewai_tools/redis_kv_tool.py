@@ -3,6 +3,13 @@ import redis
 from typing import Optional, Union
 from pydantic import Field, ConfigDict
 
+
+# flake8: noqa
+# pyright: reportOptionalSubscript=false
+# pyright: reportAssignmentType=false
+# pyright: reportCallIssue=false
+
+
 class RedisCacheTool(BaseTool):
     name: str = "Redis Cache Tool"
     description: str = """
@@ -19,36 +26,47 @@ class RedisCacheTool(BaseTool):
     - Store JSON-like data: _run("user_settings", "{'theme': 'dark', 'notifications': 'on'}")
     """
     redis_client: redis.Redis = Field(default=None, exclude=True)
-    
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, host: str = 'localhost', port: int = 6379, db: int = 0, password: Optional[str] = None):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 6379,
+        db: int = 0,
+        password: Optional[str] = None,
+    ):
         redis_client = redis.Redis(
-            host=host,
-            port=port,
-            db=db,
-            password=password,
-            decode_responses=True
+            host=host, port=port, db=db, password=password, decode_responses=True
         )
+        # The super().__init__ call passes the redis_client to
+        # the parent class, ensuring the base class (Field or
+        # another custom class) handles it as part of its
+        # initialization process
         super().__init__(redis_client=redis_client)
 
-    def _run(self, key: str, value: Union[str, int, float], expiry: Optional[int] = None) -> str:
+    def _run(
+        self, key: str, value: Union[str, int, float], expiry: Optional[int] = None
+    ) -> str:
         """
         Store data in Redis cache with optional expiration.
 
         Args:
             key (str): The key under which to store the value.
+            The key contains the intent:subject or object pattern
                 Examples:
                 - "user_123:preferences"
                 - "session_token:abc123"
                 - "cache:daily_stats"
-            
+
             value (Union[str, int, float]): The value to store.
+            The value is the data satisfying the intent. The value
+            can be used in the future when retrieving memory
                 Examples:
                 - "dark_mode"
                 - 42
                 - "{'name': 'John', 'age': 30}"
-            
+
             expiry (Optional[int]): Time in seconds after which the key will expire.
                 Examples:
                 - 3600 (1 hour)
@@ -61,7 +79,7 @@ class RedisCacheTool(BaseTool):
         Examples:
             >>> tool._run("user:theme", "dark_mode")
             "Successfully stored key 'user:theme' with value 'dark_mode'"
-            
+
             >>> tool._run("session:123", "active", 3600)
             "Successfully stored key 'session:123' with value 'active' and 3600 seconds expiry"
         """
@@ -69,7 +87,7 @@ class RedisCacheTool(BaseTool):
             # Validate inputs
             if not key or not isinstance(key, str):
                 return "Error: Key must be a non-empty string"
-            
+
             if value is None:
                 return "Error: Value cannot be None"
 
