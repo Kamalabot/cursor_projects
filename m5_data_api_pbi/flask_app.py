@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, jsonify
 
 # Initialize Flask App
 app = Flask(__name__)
@@ -101,5 +101,28 @@ def stream_sales_data():
     )
 
 
+@app.route("/api")
+def api_sales_data():
+    # Get product_id, category_id, and region_id as query parameters (defaults provided)
+    product_id = request.args.get("product_id", default="product_1", type=str)
+    category_id = request.args.get("category_id", default="cat_1", type=str)
+    region_id = request.args.get("region_id", default="region_1", type=str)
+
+    # Filter the data for the selected product, category, and region
+    filtered_data = df[
+        (df["product_id"] == product_id)
+        & (df["category_id"] == category_id)
+        & (df["region_id"] == region_id)
+    ]
+
+    # Convert the filtered data to JSON format
+    data_json = filtered_data.to_dict(
+        orient="records"
+    )  # Convert DataFrame to list of dictionaries
+
+    # Return the filtered data as JSON
+    return jsonify(data_json)
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)
