@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<company>
+    <hr>
+        <employees>
+            <employee>
+                <id>101</id>
+                <name>John Doe</name>
+                <department>Engineering</department>
+                <role>Software Developer</role>
+                <salary>80000</salary>
+                <payroll_status>Pending</payroll_status>
+                <bank_details>
+                    <bank_name>Bank of America</bank_name>
+                    <account_number>123456789</account_number>
+                    <routing_number>987654321</routing_number>
+                </bank_details>
+            </employee>
+            <employee>
+                <id>102</id>
+                <name>Jane Smith</name>
+                <department>HR</department>
+                <role>HR Manager</role>
+                <salary>75000</salary>
+                <payroll_status>Approved</payroll_status>
+                <bank_details>
+                    <bank_name>Chase Bank</bank_name>
+                    <account_number>987654321</account_number>
+                    <routing_number>123456789</routing_number>
+                </bank_details>
+            </employee>
+        </employees>
+    </hr>
+    <payroll>
+        <transactions>
+            <transaction>
+                <employee_id>101</employee_id>
+                <amount>80000</amount>
+                <status>Processing</status>
+                <vendor>ADP</vendor>
+            </transaction>
+            <transaction>
+                <employee_id>102</employee_id>
+                <amount>75000</amount>
+                <status>Completed</status>
+                <vendor>Workday</vendor>
+            </transaction>
+        </transactions>
+    </payroll>
+</company>

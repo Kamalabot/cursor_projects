@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<paychex:PayrollBatch xmlns:paychex="http://example.com/paychex">
+    <paychex:Metadata>
+        <paychex:payPeriodStart>2025-01-01</paychex:payPeriodStart>
+        <paychex:payPeriodEnd>2025-01-15</paychex:payPeriodEnd>
+    </paychex:Metadata>
+    <paychex:Transaction refId="TXN-101">
+        <paychex:Employee>
+            <paychex:ID>101</paychex:ID>
+            <paychex:FullName>John Doe</paychex:FullName>
+            <paychex:Salary currency="USD">80000</paychex:Salary>
+            <paychex:MaskedBankInfo>****6789</paychex:MaskedBankInfo>
+        </paychex:Employee>
+    </paychex:Transaction>
+</paychex:PayrollBatch>

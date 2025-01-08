@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<company xmlns:hr="http://example.com/hr" xmlns:payroll="http://example.com/payroll" xmlns:bank="http://example.com/bank" xmlns:vendor="http://example.com/vendor">
+    <hr:employees>
+        <hr:employee id="101" status="active">
+            <hr:name>John Doe</hr:name>
+            <hr:department>Engineering</hr:department>
+            <hr:role>Software Developer</hr:role>
+            <hr:salary currency="USD">80000</hr:salary>
+            <hr:payroll_status status="Pending"/>
+            <bank:details>
+                <bank:bank_name>Bank of America</bank:bank_name>
+                <bank:account number="123456789" routing="987654321"/>
+            </bank:details>
+        </hr:employee>
+        <hr:employee id="102" status="active">
+            <hr:name>Jane Smith</hr:name>
+            <hr:department>HR</hr:department>
+            <hr:role>HR Manager</hr:role>
+            <hr:salary currency="USD">75000</hr:salary>
+            <hr:payroll_status status="Approved"/>
+            <bank:details>
+                <bank:bank_name>Chase Bank</bank:bank_name>
+                <bank:account number="987654321" routing="123456789"/>
+            </bank:details>
+        </hr:employee>
+        <hr:employee id="103" status="inactive">
+            <hr:name>Robert Brown</hr:name>
+            <hr:department>Finance</hr:department>
+            <hr:role>Financial Analyst</hr:role>
+            <hr:salary currency="USD">85000</hr:salary>
+            <hr:payroll_status status="Pending"/>
+            <bank:details>
+                <bank:bank_name>Wells Fargo</bank:bank_name>
+                <bank:account number="555555555" routing="222222222"/>
+            </bank:details>
+        </hr:employee>
+        <hr:employee id="104" status="active">
+            <hr:name>Emily Davis</hr:name>
+            <hr:department>Marketing</hr:department>
+            <hr:role>Marketing Manager</hr:role>
+            <hr:salary currency="USD">78000</hr:salary>
+            <hr:payroll_status status="Approved"/>
+            <bank:details>
+                <bank:bank_name>Citi Bank</bank:bank_name>
+                <bank:account number="666666666" routing="333333333"/>
+            </bank:details>
+        </hr:employee>
+        <hr:employee id="105" status="active">
+            <hr:name>Michael Johnson</hr:name>
+            <hr:department>Sales</hr:department>
+            <hr:role>Sales Executive</hr:role>
+            <hr:salary currency="USD">72000</hr:salary>
+            <hr:payroll_status status="Pending"/>
+            <bank:details>
+                <bank:bank_name>Bank of America</bank:bank_name>
+                <bank:account number="777777777" routing="444444444"/>
+            </bank:details>
+        </hr:employee>
+    </hr:employees>
+    <payroll:transactions>
+        <payroll:transaction employee_id="101" vendor="ADP" status="Processing">
+            <payroll:amount currency="USD">80000</payroll:amount>
+        </payroll:transaction>
+        <payroll:transaction employee_id="102" vendor="Workday" status="Completed">
+            <payroll:amount currency="USD">75000</payroll:amount>
+        </payroll:transaction>
+        <payroll:transaction employee_id="103" vendor="ADP" status="Processing">
+            <payroll:amount currency="USD">85000</payroll:amount>
+        </payroll:transaction>
+        <payroll:transaction employee_id="104" vendor="Workday" status="Completed">
+            <payroll:amount currency="USD">78000</payroll:amount>
+        </payroll:transaction>
+        <payroll:transaction employee_id="105" vendor="ADP" status="Processing">
+            <payroll:amount currency="USD">72000</payroll:amount>
+        </payroll:transaction>
+    </payroll:transactions>
+</company>
