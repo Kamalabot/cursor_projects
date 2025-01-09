@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-suite xmlns:hr="http://example.com/hr" 
+            xmlns:bank="http://example.com/bank">
+    
+    <!-- Scenario 1: Basic Valid Employee -->
+    <test-case id="basic-valid">
+        <hr:employees>
+            <hr:employee id="101" status="active">
+                <hr:name>John Doe</hr:name>
+                <hr:salary currency="USD">80000</hr:salary>
+                <bank:details>
+                    <bank:account number="123456789"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 2: Multiple Employees -->
+    <test-case id="multiple-employees">
+        <hr:employees>
+            <hr:employee id="201" status="active">
+                <hr:name>John Doe</hr:name>
+                <hr:salary currency="USD">80000</hr:salary>
+                <bank:details>
+                    <bank:account number="123456789"/>
+                </bank:details>
+            </hr:employee>
+            <hr:employee id="202" status="active">
+                <hr:name>Jane Smith</hr:name>
+                <hr:salary currency="USD">90000</hr:salary>
+                <bank:details>
+                    <bank:account number="987654321"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 3: Different Currency -->
+    <test-case id="different-currency">
+        <hr:employees>
+            <hr:employee id="301" status="active">
+                <hr:name>Hans Schmidt</hr:name>
+                <hr:salary currency="EUR">75000</hr:salary>
+                <bank:details>
+                    <bank:account number="111222333"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 4: Short Account Number -->
+    <test-case id="short-account">
+        <hr:employees>
+            <hr:employee id="401" status="active">
+                <hr:name>Mary Johnson</hr:name>
+                <hr:salary currency="USD">65000</hr:salary>
+                <bank:details>
+                    <bank:account number="1234"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 5: Missing Optional Fields -->
+    <test-case id="missing-optional">
+        <hr:employees>
+            <hr:employee id="501" status="active">
+                <hr:name>Bob Wilson</hr:name>
+                <hr:salary>70000</hr:salary>
+                <bank:details>
+                    <bank:account number="999888777"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 6: Special Characters in Name -->
+    <test-case id="special-chars">
+        <hr:employees>
+            <hr:employee id="601" status="active">
+                <hr:name>María O'Connor-Smith</hr:name>
+                <hr:salary currency="USD">95000</hr:salary>
+                <bank:details>
+                    <bank:account number="444555666"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 7: Mixed Status Employees -->
+    <test-case id="mixed-status">
+        <hr:employees>
+            <hr:employee id="701" status="active">
+                <hr:name>Active Employee</hr:name>
+                <hr:salary currency="USD">85000</hr:salary>
+                <bank:details>
+                    <bank:account number="111111111"/>
+                </bank:details>
+            </hr:employee>
+            <hr:employee id="702" status="inactive">
+                <hr:name>Inactive Employee</hr:name>
+                <hr:salary currency="USD">75000</hr:salary>
+                <bank:details>
+                    <bank:account number="222222222"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 8: Long Account Numbers -->
+    <test-case id="long-account">
+        <hr:employees>
+            <hr:employee id="801" status="active">
+                <hr:name>Long Account Holder</hr:name>
+                <hr:salary currency="USD">92000</hr:salary>
+                <bank:details>
+                    <bank:account number="123456789012345"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+
+    <!-- Scenario 9: International Characters -->
+    <test-case id="international">
+        <hr:employees>
+            <hr:employee id="901" status="active">
+                <hr:name>José Ángel García</hr:name>
+                <hr:salary currency="EUR">65000</hr:salary>
+                <bank:details>
+                    <bank:account number="333333333"/>
+                </bank:details>
+            </hr:employee>
+        </hr:employees>
+    </test-case>
+</test-suite> 
