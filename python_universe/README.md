@@ -56,25 +56,36 @@ pip install pywebio plotly requests beautifulsoup4
 
 3. Run the application:
 
-python python_universe01.py
+python python_universe02.py
 
-2. Open your web browser and navigate to:
+4. Access the application:
+- Open your web browser
+- Navigate to: `http://localhost:8080`
+- The home page will show the Python Domain Treemap
+- Click "Explore Python Domains" to access the domain selection interface
 
-http://localhost:8080
+## Usage
 
-3. Use the interface to:
-   - Select domains of interest
-   - Mark packages you're familiar with
-   - View statistics and visualizations
-   - Explore package hierarchies
+The application provides two main interfaces:
+
+1. **Home Page** (`/`)
+   - Interactive treemap visualization of Python domains
+   - Overview of package distribution
+   - Navigation to domain selection
+
+2. **Domain Selection** (`/domain_selection`)
+   - Select specific domains to explore
+   - View detailed package listings
+   - Material Design interface for better user experience
 
 ## Technical Details
 
 - Built with PyWebIO for web interface
 - Uses Plotly for interactive visualizations
-- Fetches data from awesome-python GitHub repository
-- Implements caching for better performance
-- Responsive design for various screen sizes
+- Material Design-inspired UI components
+- Responsive layout for all screen sizes
+- Multi-page application structure
+- Session-based state management
 
 ## Data Sources
 
@@ -98,3 +109,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - awesome-python repository maintainers
 - PyWebIO developers
 - Plotly team
+- Material Design team

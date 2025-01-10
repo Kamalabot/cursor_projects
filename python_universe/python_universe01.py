@@ -196,20 +196,18 @@ def create_dashboard():
     try:
         # Get both python_universe and domain_mapping
         python_universe, domain_mapping = create_python_universe()
-        # put_text("python_universe is ready")
+        put_text("python_universe is ready")
     except Exception as e:
-        # Fallback to existing dictionary if fetch fails
         print(f"Failed to fetch online data: {e}")
-        python_universe = {}  # Add fallback data if needed
-        domain_mapping = {}   # Add fallback mapping if needed
+        python_universe = {}
+        domain_mapping = {}
 
-    # Create and display domain mapping visualization
+    # Create and display domain mapping visualization first
     put_markdown("## Python Domain Mapping")
     
-    # Prepare data for treemap
+    # Treemap visualization code
     treemap_data = []
     for domain, info in domain_mapping.items():
-        # Add domain as root
         treemap_data.append(dict(
             ids=domain,
             labels=domain,
@@ -217,7 +215,6 @@ def create_dashboard():
             values=len(info['sections']) if info['sections'] else 0
         ))
         
-        # Add sections under each domain
         for section in info['sections']:
             section_id = f"{domain}/{section['name']}"
             treemap_data.append(dict(
@@ -241,9 +238,9 @@ def create_dashboard():
                 'rgb(255, 152, 0)',    # Orange
                 'rgb(255, 111, 0)',    # Dark orange
                 'rgb(255, 87, 34)',    # Deep orange
-            ] * (len(treemap_data) // 5 + 1),  # Repeat colors as needed
+            ] * (len(treemap_data) // 5 + 1),
             line=dict(
-                color='rgb(33, 33, 33)',  # Dark gray for borders
+                color='rgb(33, 33, 33)',
                 width=2
             )
         ),
@@ -251,7 +248,7 @@ def create_dashboard():
         textfont=dict(
             size=14,
             family='Arial Black, sans-serif',
-            color='rgb(33, 33, 33)'  # Dark gray text
+            color='rgb(33, 33, 33)'
         )
     ))
     
@@ -271,9 +268,12 @@ def create_dashboard():
     html_map = fig_map.to_html(include_plotlyjs="require", full_html=False)
     put_html(f"""
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        {html_map}
+        <div class='treemap-container'>
+            {html_map}
+        </div>
     """)
-    # Domain selector with larger size
+
+    # Now add the domain selector below the treemap as a collapsible section
     put_html("""
         <style>
         .select-box {
@@ -299,150 +299,150 @@ def create_dashboard():
         </style>
     """)
     
-    # Create the select box with all domains
-    put_html("<div class='select-box'>")
-    selected_domains = select(
-        label="Select Domains to View",
-        options=list(python_universe.keys()),
-        multiple=True,
-        value=list(python_universe.keys()),  # All domains selected by default
-        help_text="Hold Ctrl/Cmd to select multiple domains"
-    )
-    put_html("</div>")
+    # put_html("<div class='select-box'>")
+    # selected_domains = select(
+    #         label="Select Domains to View",
+    #         options=list(python_universe.keys()),
+    #         multiple=True,
+    #         value=list(python_universe.keys()),
+    #         help_text="Hold Ctrl/Cmd to select multiple domains"
+    # )
+            
+    # if not selected_domains:
+    #     selected_domains = list(python_universe.keys())
+    # put_html("</div>")
     
-    if not selected_domains:
-        selected_domains = list(python_universe.keys())
+    # # Filter and show domains in a new section
+    # filtered_universe = {k: python_universe[k] for k in selected_domains}
     
-    # Filter python_universe based on selected domains
-    filtered_universe = {k: python_universe[k] for k in selected_domains}
+    # put_html("<div class='package-section'>")
+    # put_markdown("## Python Domains and Packages")
     
-    # Show domains and packages
-    put_markdown("## Python Domains and Packages")
+    # for domain, packages in filtered_universe.items():
+    #     put_collapse(f"{domain} ({len(packages)} packages)", [
+    #         put_table([
+    #             [package] for package in packages
+    #         ])
+    #     ])
+    # put_html("</div>")
     
-    for domain, packages in filtered_universe.items():
-        put_collapse(f"{domain} ({len(packages)} packages)", [
-            put_table([
-                [package] for package in packages
-            ])
-        ])
+    # # Package selection interface
+    # put_markdown("## Select Packages You've Spiked")
     
-    # Package selection interface
-    put_markdown("## Select Packages You've Spiked")
+    # user_packages = []
+    # for domain, packages in filtered_universe.items():
+    #     domain_selections = checkbox(
+    #         label=domain,
+    #         options=packages,
+    #         value=[]
+    #     )
+    #     user_packages.extend(domain_selections)
     
-    user_packages = []
-    for domain, packages in filtered_universe.items():
-        domain_selections = checkbox(
-            label=domain,
-            options=packages,
-            value=[]
-        )
-        user_packages.extend(domain_selections)
+    # # Modified statistics and visualization section
+    # domain_stats = {domain: len(packages) for domain, packages in filtered_universe.items()}
     
-    # Modified statistics and visualization section
-    domain_stats = {domain: len(packages) for domain, packages in filtered_universe.items()}
+    # # Calculate user package stats per domain
+    # user_domain_stats = {}
+    # for domain, packages in filtered_universe.items():
+    #     user_domain_stats[domain] = len([pkg for pkg in user_packages if pkg in packages])
     
-    # Calculate user package stats per domain
-    user_domain_stats = {}
-    for domain, packages in filtered_universe.items():
-        user_domain_stats[domain] = len([pkg for pkg in user_packages if pkg in packages])
-    
-    # Create and display Plotly bar chart
-    put_markdown("## Domain Knowledge Statistics")
+    # # Create and display Plotly bar chart
+    # put_markdown("## Domain Knowledge Statistics")
        
-    # Grouped Bar Chart with brighter colors and larger fonts
-    fig = go.Figure(data=[
-        go.Bar(
-            name='Available Packages',
-            x=list(domain_stats.keys()),
-            y=list(domain_stats.values()),
-            text=list(domain_stats.values()),
-            textposition='auto',
-            textfont=dict(
-                size=16,
-                family='Arial Black, sans-serif'
-            ),
-            marker_color='rgb(100, 255, 100)'  # Brighter green
-        ),
-        go.Bar(
-            name='Packages You Know',
-            x=list(user_domain_stats.keys()),
-            y=list(user_domain_stats.values()),
-            text=list(user_domain_stats.values()),
-            textposition='auto',
-            textfont=dict(
-                size=16,
-                family='Arial Black, sans-serif'
-            ),
-            marker_color='rgb(100, 200, 255)'  # Brighter blue
-        )
-    ])
+    # # Grouped Bar Chart with brighter colors and larger fonts
+    # fig = go.Figure(data=[
+    #     go.Bar(
+    #         name='Available Packages',
+    #         x=list(domain_stats.keys()),
+    #         y=list(domain_stats.values()),
+    #         text=list(domain_stats.values()),
+    #         textposition='auto',
+    #         textfont=dict(
+    #             size=16,
+    #             family='Arial Black, sans-serif'
+    #         ),
+    #         marker_color='rgb(100, 255, 100)'  # Brighter green
+    #     ),
+    #     go.Bar(
+    #         name='Packages You Know',
+    #         x=list(user_domain_stats.keys()),
+    #         y=list(user_domain_stats.values()),
+    #         text=list(user_domain_stats.values()),
+    #         textposition='auto',
+    #         textfont=dict(
+    #             size=16,
+    #             family='Arial Black, sans-serif'
+    #         ),
+    #         marker_color='rgb(100, 200, 255)'  # Brighter blue
+    #     )
+    # ])
     
-    fig.update_layout(
-        title=dict(
-            text="Packages by Domain: Available vs. Known",
-            font=dict(
-                size=24,
-                family='Arial Black, sans-serif',
-                color='rgb(33, 33, 33)'
-            )
-        ),
-        xaxis_title=dict(
-            text="Domains",
-            font=dict(
-                size=18,
-                family='Arial Black, sans-serif'
-            )
-        ),
-        yaxis_title=dict(
-            text="Number of Packages",
-            font=dict(
-                size=18,
-                family='Arial Black, sans-serif'
-            )
-        ),
-        height=800,
-        barmode='group',
-        xaxis={'tickangle': 45, 'tickfont': {'size': 14, 'family': 'Arial Black'}},
-        yaxis={'tickfont': {'size': 14, 'family': 'Arial Black'}},
-        showlegend=True,
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="right",
-            x=0.99,
-            font=dict(
-                size=16,
-                family='Arial Black, sans-serif'
-            )
-        ),
-        margin=dict(b=100)  # Increase bottom margin for rotated labels
-    )
+    # fig.update_layout(
+    #     title=dict(
+    #         text="Packages by Domain: Available vs. Known",
+    #         font=dict(
+    #             size=24,
+    #             family='Arial Black, sans-serif',
+    #             color='rgb(33, 33, 33)'
+    #         )
+    #     ),
+    #     xaxis_title=dict(
+    #         text="Domains",
+    #         font=dict(
+    #             size=18,
+    #             family='Arial Black, sans-serif'
+    #         )
+    #     ),
+    #     yaxis_title=dict(
+    #         text="Number of Packages",
+    #         font=dict(
+    #             size=18,
+    #             family='Arial Black, sans-serif'
+    #         )
+    #     ),
+    #     height=800,
+    #     barmode='group',
+    #     xaxis={'tickangle': 45, 'tickfont': {'size': 14, 'family': 'Arial Black'}},
+    #     yaxis={'tickfont': {'size': 14, 'family': 'Arial Black'}},
+    #     showlegend=True,
+    #     legend=dict(
+    #         yanchor="top",
+    #         y=0.99,
+    #         xanchor="right",
+    #         x=0.99,
+    #         font=dict(
+    #             size=16,
+    #             family='Arial Black, sans-serif'
+    #         )
+    #     ),
+    #     margin=dict(b=100)  # Increase bottom margin for rotated labels
+    # )
     
-    html_bar = fig.to_html(include_plotlyjs="require", full_html=False)
-    put_html(f"""
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        {html_bar}
-    """)
+    # html_bar = fig.to_html(include_plotlyjs="require", full_html=False)
+    # put_html(f"""
+    #     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    #     {html_bar}
+    # """)
     
-    # Show user selection summary
-    if user_packages:
-        put_markdown("## Your Package Experience")
-        put_text(f"You have experience with {len(user_packages)} packages:")
+    # # Show user selection summary
+    # if user_packages:
+    #     put_markdown("## Your Package Experience")
+    #     put_text(f"You have experience with {len(user_packages)} packages:")
         
-        # Group user packages by domain
-        user_packages_by_domain = {}
-        for domain, packages in filtered_universe.items():
-            domain_packages = [pkg for pkg in user_packages if pkg in packages]
-            if domain_packages:
-                user_packages_by_domain[domain] = domain_packages
+    #     # Group user packages by domain
+    #     user_packages_by_domain = {}
+    #     for domain, packages in filtered_universe.items():
+    #         domain_packages = [pkg for pkg in user_packages if pkg in packages]
+    #         if domain_packages:
+    #             user_packages_by_domain[domain] = domain_packages
         
-        # Display packages grouped by domain
-        for domain, packages in user_packages_by_domain.items():
-            put_collapse(f"{domain} ({len(packages)} packages)", [
-                put_table([
-                    [package] for package in packages
-                ])
-            ])
+    #     # Display packages grouped by domain
+    #     for domain, packages in user_packages_by_domain.items():
+    #         put_collapse(f"{domain} ({len(packages)} packages)", [
+    #             put_table([
+    #                 [package] for package in packages
+    #             ])
+    #         ])
 
 if __name__ == '__main__':
     start_server(create_dashboard, port=8080, debug=True)
